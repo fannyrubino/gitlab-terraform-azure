@@ -15,4 +15,8 @@ provider "azurerm" {
 resource "azurerm_resource_group" "rg" {
   name     = "myTFResourceGroup"
   location = "norwayeast"
+  tags = {
+      Environment = "development"
+      Team = "DevOps"
+    }
 }
