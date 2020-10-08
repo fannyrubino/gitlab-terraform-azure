@@ -21,9 +21,6 @@ variables:
   TF_ROOT: ${CI_PROJECT_DIR}/src
 
 cache:
-#  paths:
-#    - .terraform
-#  key: ${TF_STATE}
   key: "$CI_COMMIT_SHA"
   paths:
     - ${TF_ROOT}/.terraform
@@ -32,18 +29,11 @@ before_script:
   - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   - terraform --version
   - cd src
-#  - apk update
-#  - apk add bash py-pip curl
-#  - apk add --virtual=build gcc libffi-dev musl-dev openssl-dev python-dev make && \
-#  - pip --no-cache-dir install -U pip && \
-#  - pip --no-cache-dir install azure-cli && \
-#  - apk del --purge build
-#  - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID}
   - export ARM_CLIENT_ID=${AZURE_CLIENT_ID}
   - export ARM_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
   - export ARM_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID}
   - export ARM_TENANT_ID=${AZURE_TENANT_ID}
-  - terraform init -reconfigure -backend-config="address=${GITLAB_TF_ADDRESS}" -backend-config="lock_address=${GITLAB_TF_ADDRESS}/lock" -backend-config="unlock_address=${GITLAB_TF_ADDRESS}/lock" -backend-config="username=frubino" -backend-config="password=${CI_JOB_TOKEN}" -backend-config="lock_method=POST" -backend-config="unlock_method=DELETE" -backend-config="retry_wait_min=5"
+  - terraform init -reconfigure -backend-config="address=${GITLAB_TF_ADDRESS}" -backend-config="lock_address=${GITLAB_TF_ADDRESS}/lock" -backend-config="unlock_address=${GITLAB_TF_ADDRESS}/lock" -backend-config="username=rubino" -backend-config="password=${GITLAB_ACCESS_TOKEN}" -backend-config="lock_method=POST" -backend-config="unlock_method=DELETE" -backend-config="retry_wait_min=5"
 
 stages:
   - validate
