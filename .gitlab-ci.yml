@@ -55,10 +55,13 @@ validate:
   stage: validate
   script:
     - terraform validate
+  when: manual
 
 plan:
   stage: build
   script:
+    - cat plan.tfplan
+    - cat tfplan.json
     - terraform plan -out=$PLAN
     - "terraform show --json $PLAN | convert_report > $JSON_PLAN_FILE"
   artifacts:
@@ -66,6 +69,7 @@ plan:
       - $PLAN
     reports:
       terraform: $JSON_PLAN_FILE
+  when: manual
 
 # Separate apply job for manual launching Terraform as it can be destructive
 # action.
