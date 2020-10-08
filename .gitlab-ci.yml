@@ -12,8 +12,8 @@ image:
 
 # Default output file for Terraform plan
 variables:
-  PLAN: plan.tfplan
-  JSON_PLAN_FILE: tfplan.json
+  PLAN: ${CI_PROJECT_DIR}/src/plan.tfplan
+  JSON_PLAN_FILE: ${CI_PROJECT_DIR}/src/tfplan.json
   TF_IN_AUTOMATION: "true"
   GITLAB_TF_ADDRESS: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_PROJECT_NAME}
   TF_STATE: ${CI_PROJECT_NAME}
