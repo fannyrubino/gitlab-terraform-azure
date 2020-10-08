@@ -1,21 +1,23 @@
-image: registry.gitlab.com/gitlab-org/terraform-images/stable:latest
-
-variables:
-  TF_ROOT: ${CI_PROJECT_DIR}/src
-  TF_ADDRESS: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/tf_st
+image:
+  name: hashicorp/terraform:latest
+  entrypoint:
+    - /usr/bin/env
+    - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 cache:
-  key: tf_st
+  key: terraform
   paths:
-    - ${TF_ROOT}/.terraform
+    - ${CI_PROJECT_DIR}/src/.terraform
     
 before_script:
-  - cd ${TF_ROOT}
+  - cd ${CI_PROJECT_DIR}/src
+  - rm -rf .terraform
+  - terraform --version
 
 stages:
   - prepare
   - validate
-  - build
+  - plan
   - deploy
 
 init:
@@ -29,9 +31,14 @@ validate:
     - gitlab-terraform validate
 
 plan:
-  stage: build
+  stage: plan
   script:
-    - gitlab-terraform plan
+    - terraform plan -out "planfile"
+  dependencies:
+    - validate
+  artifacts:
+    paths:
+      - planfile
 
 
 apply:
