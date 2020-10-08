@@ -32,17 +32,17 @@ before_script:
   - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   - terraform --version
   - cd src
-  - apk update
-  - apk add bash py-pip curl
-  - apk add --virtual=build gcc libffi-dev musl-dev openssl-dev python-dev make && \
-  - pip --no-cache-dir install -U pip && \
-  - pip --no-cache-dir install azure-cli && \
-  - apk del --purge build
-  - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID}
-  - export ARM_CLIENT_ID=${AZURE_CLIENT_ID}
-  - export ARM_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
-  - export ARM_SUBSCRIPTION_ID=$(az account show --query id | xargs)
-  - export ARM_TENANT_ID=$(az account show --query tenantId | xargs)
+#  - apk update
+#  - apk add bash py-pip curl
+#  - apk add --virtual=build gcc libffi-dev musl-dev openssl-dev python-dev make && \
+#  - pip --no-cache-dir install -U pip && \
+#  - pip --no-cache-dir install azure-cli && \
+#  - apk del --purge build
+#  - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID}
+#  - export ARM_CLIENT_ID=${AZURE_CLIENT_ID}
+#  - export ARM_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+#  - export ARM_SUBSCRIPTION_ID=$(az account show --query id | xargs)
+#  - export ARM_TENANT_ID=$(az account show --query tenantId | xargs)
   - terraform init -reconfigure -backend-config="address=${GITLAB_TF_ADDRESS}" -backend-config="lock_address=${GITLAB_TF_ADDRESS}/lock" -backend-config="unlock_address=${GITLAB_TF_ADDRESS}/lock" -backend-config="username=frubino" -backend-config="password=${CI_JOB_TOKEN}" -backend-config="lock_method=POST" -backend-config="unlock_method=DELETE" -backend-config="retry_wait_min=5"
 
 stages:
