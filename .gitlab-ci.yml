@@ -89,6 +89,6 @@ destroy:
   environment:
     name: production
   script:
-    - terraform destroy
+    - terraform destroy -auto-approve
   when: manual
 
