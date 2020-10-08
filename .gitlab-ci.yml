@@ -60,9 +60,9 @@ validate:
 plan:
   stage: build
   script:
-    - cat plan.tfplan
-    - cat tfplan.json
-    - terraform plan -out=$PLAN
+    - cat > plan.tfplan
+    - cat > tfplan.json
+    - terraform plan -out=plan.tfplan
     - "terraform show --json $PLAN | convert_report > $JSON_PLAN_FILE"
   artifacts:
     paths:
