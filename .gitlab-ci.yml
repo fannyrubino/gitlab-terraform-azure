@@ -32,6 +32,12 @@ before_script:
   - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
   - terraform --version
   - cd src
+  - apk update
+  - apk add bash py-pip curl
+  - apk add --virtual=build gcc libffi-dev musl-dev openssl-dev python-dev make && \
+  - pip --no-cache-dir install -U pip && \
+  - pip --no-cache-dir install azure-cli && \
+  - apk del --purge build
   - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID}
   - export ARM_CLIENT_ID=${AZURE_CLIENT_ID}
   - export ARM_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
