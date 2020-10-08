@@ -50,6 +50,7 @@ stages:
   - build
   - test
   - deploy
+  - destroy
 
 validate:
   stage: validate
@@ -81,5 +82,13 @@ apply:
     - terraform apply -input=false $PLAN
   dependencies:
     - plan
+  when: manual
+
+  destroy:
+  stage: destroy
+  environment:
+    name: production
+  script:
+    - terraform destroy
   when: manual
 
