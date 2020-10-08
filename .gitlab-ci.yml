@@ -84,7 +84,7 @@ apply:
     - plan
   when: manual
 
-  destroy:
+destroy:
   stage: destroy
   environment:
     name: production
