@@ -14,10 +14,16 @@ image:
 variables:
   PLAN: plan.tfplan
   JSON_PLAN_FILE: tfplan.json
+  TF_STATE: ${CI_PROJECT_NAME}
+  TF_ADDRESS: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${TF_STATE}
+  TF_ROOT: ${CI_PROJECT_DIR}/src
 
 cache:
+#  paths:
+#    - .terraform
+  key: ${TF_STATE}
   paths:
-    - .terraform
+    - ${TF_ROOT}/.terraform
 
 before_script:
   - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
