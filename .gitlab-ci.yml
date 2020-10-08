@@ -1,53 +1,81 @@
-image: registry.gitlab.com/gitlab-org/terraform-images/stable:latest
+# This file is a template, and might need editing before it works on your project.
+# Official image for Hashicorp's Terraform. It uses light image which is Alpine
+# based as it is much lighter.
+#
+# Entrypoint is also needed as image by default set `terraform` binary as an
+# entrypoint.
+image:
+  name: registry.gitlab.com/gitlab-org/gitlab-build-images:terraform
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 
+# Default output file for Terraform plan
 variables:
+  PLAN: plan.tfplan
+  JSON_PLAN_FILE: tfplan.json
+  TF_IN_AUTOMATION: "true"
+  GITLAB_TF_ADDRESS: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_PROJECT_NAME}
+  TF_STATE: ${CI_PROJECT_NAME}
+  TF_ADDRESS: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${TF_STATE}
   TF_ROOT: ${CI_PROJECT_DIR}/src
-  TF_ADDRESS: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/tf_st
 
 cache:
-  key: tf_st
+#  paths:
+#    - .terraform
+#  key: ${TF_STATE}
+  key: "$CI_COMMIT_SHA"
   paths:
     - ${TF_ROOT}/.terraform
-    
+
 before_script:
-  - cd ${TF_ROOT}
+  - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
+  - terraform --version
+  - cd src
+#  - apk update
+#  - apk add bash py-pip curl
+#  - apk add --virtual=build gcc libffi-dev musl-dev openssl-dev python-dev make && \
+#  - pip --no-cache-dir install -U pip && \
+#  - pip --no-cache-dir install azure-cli && \
+#  - apk del --purge build
+#  - az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID}
+  - export ARM_CLIENT_ID=${AZURE_CLIENT_ID}
+  - export ARM_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+  - export ARM_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID}
+  - export ARM_TENANT_ID=${AZURE_TENANT_ID}
+  - terraform init -reconfigure -backend-config="address=${GITLAB_TF_ADDRESS}" -backend-config="lock_address=${GITLAB_TF_ADDRESS}/lock" -backend-config="unlock_address=${GITLAB_TF_ADDRESS}/lock" -backend-config="username=frubino" -backend-config="password=${CI_JOB_TOKEN}" -backend-config="lock_method=POST" -backend-config="unlock_method=DELETE" -backend-config="retry_wait_min=5"
 
 stages:
-  - prepare
   - validate
   - build
+  - test
   - deploy
-
-init:
-  stage: prepare
-  script:
-    - gitlab-terraform init
 
 validate:
   stage: validate
   script:
-    - gitlab-terraform validate
+    - terraform validate
 
 plan:
   stage: build
   script:
-    - gitlab-terraform plan
-    - gitlab-terraform plan-json
+    - terraform plan -out=$PLAN
+    - "terraform show --json $PLAN | convert_report > $JSON_PLAN_FILE"
   artifacts:
-    name: plan
     paths:
-      - ${TF_ROOT}/plan.cache
+      - $PLAN
     reports:
-      terraform: ${TF_ROOT}/plan.json
+      terraform: $JSON_PLAN_FILE
 
+# Separate apply job for manual launching Terraform as it can be destructive
+# action.
 apply:
   stage: deploy
   environment:
-    name: development
+    name: production
   script:
-    - gitlab-terraform apply
+    - terraform apply -input=false $PLAN
   dependencies:
     - plan
   when: manual
-  only:
-    - master
+
