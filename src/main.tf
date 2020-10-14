@@ -19,8 +19,8 @@ module "resource_group" {
 	tags		= {Environment = "development", type = "global"}
 }
 
-variable "ARM_CLIENT_ID" {}
-variable "ARM_CLIENT_SECRET" {}
+#variable "ARM_CLIENT_ID" {}
+#variable "ARM_CLIENT_SECRET" {}
 
 module "azure-kubernetes-cluster"{
 	source				= "../modules/azure/azure-kubernetes-cluster"
@@ -36,7 +36,7 @@ module "azure-kubernetes-cluster"{
   	client_secretvar 	= var.ARM_CLIENT_SECRET
   	
 #   	depends_on = [
-#   		resource_group.rg
+#   		resource_group.rg 
 #   	]
 
 }
