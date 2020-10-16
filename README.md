@@ -87,4 +87,6 @@ If you don't save the client secret you can reset it and get a new one with
 
 ### Step 3:
 
-Clone this repository
+Clone this repository...
+
+...WIP...
